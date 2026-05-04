@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import requests
+import json
 
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -163,18 +164,20 @@ diff:
     print("\n===== AI REVIEW RESULT =====")
     print(result)
 
+    result_clean = result.strip()
+
+    if result_clean.startswith("```"):
+        result_clean = result_clean.replace("```json", "").replace("```", "").strip()
 
     try:
+        data = json.loads(result_clean)
         level = data.get("level", "OK")
         score = data.get("score", 100)
     except:
         level = "WARNING"
         score = 70
 
-    print(f"\nAI REVIEW LEVEL: {level}")
-    print(f"AI REVIEW SCORE: {score}")
-
-# 誤判定ガード
+    # 誤判定ガード
     false_critical_keywords = ["os.getenv", "files[:5]", "--unified"]
 
     if level == "CRITICAL":
@@ -184,11 +187,19 @@ diff:
                 score = 70
                 break
 
-    if "OK" not in result.strip().upper():
-            print("\nAIレビューで指摘があります。")
-            print("ただし手動レビュー用なのでCIは失敗にしません。")
-            return
-    print("\nAIレビューOK") 
+    print(f"\nAI REVIEW LEVEL: {level}")
+    print(f"AI REVIEW SCORE: {score}")
+
+    if level == "CRITICAL":
+        print("\n重大な問題あり。CIを失敗にします。")
+        sys.exit(1)
+
+    if level == "WARNING":
+        print("\nAIレビューで指摘があります。")
+        print("ただしWARNINGなのでCIは失敗にしません。")
+        return
+
+    print("\nAIレビューOK")
 
 if __name__ == "__main__":
     main()

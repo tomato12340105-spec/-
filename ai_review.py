@@ -39,15 +39,22 @@ def run_command(command):
 
 
 def get_git_diff() -> str:
-    diff = run_command(["git", "diff", "HEAD^", "HEAD"])
+    try:
+        files = run_command(["git", "diff", "--name-only", "HEAD^", "HEAD"]).splitlines()
+    except:
+        files = []
 
-    if "unknown revision" in diff.lower() or "ambiguous argument" in diff.lower():
-        diff = run_command(["git", "show", "--format=", "--no-ext-diff", "HEAD"])
+    if not files:
+        return ""
 
-    if not diff.strip():
-        diff = run_command(["git", "diff"])
+    diffs = []
 
-    return diff
+    for f in files[:5]:  # 上位5ファイルだけ
+        d = run_command(["git", "diff", "--unified=20", "HEAD^", "HEAD", "--", f])
+        if d.strip():
+            diffs.append(f"### FILE: {f}\n{d}")
+
+    return "\n\n".join(diffs)
 
 def call_groq(prompt: str) -> str:
     if not GROQ_API_KEY:
@@ -86,7 +93,7 @@ def call_groq(prompt: str) -> str:
     if response.status_code == 429:
         print("Groq rate limit。30秒待って再実行してください。")
         sys.exit(1)
-        response.raise_for_status()
+    response.raise_for_status()
 
     return response.json()["choices"][0]["message"]["content"]
 
@@ -124,12 +131,25 @@ diff:
 
     print("\n===== AI REVIEW RESULT =====")
     print(result)
+    # スコアリング
+    result_upper = result.upper()
 
+    if "CRITICAL" in result_upper or "危険" in result:
+        score = 30
+    elif "WARNING" in result_upper or "注意" in result:
+        score = 70
+    else:
+        score = 100
+
+    print(f"\nAI REVIEW SCORE: {score}")
+
+    if score < 50:
+        print("重大な問題あり（参考表示）")
+        sys.exit(1)
     if "OK" not in result.strip().upper():
-        print("\nAIレビューで指摘があります。")
-        print("ただし手動レビュー用なのでCIは失敗にしません。")
-        return
-
+            print("\nAIレビューで指摘があります。")
+            print("ただし手動レビュー用なのでCIは失敗にしません。")
+            return
     print("\nAIレビューOK") 
 
 if __name__ == "__main__":

@@ -1,0 +1,5 @@
+FROM deepseek-coder:6.7b
+SYSTEM "Output ONLY raw Python code. NO explanations. NO comments. NO Japanese. NO intro. START with 'import MetaTrader5 as mt5'. END immediately after code block."
+PARAMETER temperature 0.1
+PARAMETER stop "```"
+PARAMETER stop "This"

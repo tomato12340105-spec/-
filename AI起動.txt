@@ -1,0 +1,1 @@
+& "C:\Users\tomat\OneDrive\デスクトップ\fx\プログラムするうえで\pipeline.ps1"

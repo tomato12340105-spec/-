@@ -1,0 +1,4 @@
+.lmstudio/
+__pycache__/
+.env
+.vscode/

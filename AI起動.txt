@@ -1,1 +1,5 @@
 & "C:\Users\tomat\OneDrive\デスクトップ\fx\プログラムするうえで\pipeline.ps1"
+
+"C:\Program Files\Git\bin\git.exe" add ai_review.py
+"C:\Program Files\Git\bin\git.exe" commit -m "add ai review scoring"
+"C:\Program Files\Git\bin\git.exe" push

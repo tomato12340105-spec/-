@@ -83,16 +83,13 @@ def call_groq(prompt: str) -> str:
                 "role": "system",
                 "content": (
                     "あなたはコードレビュー専門家です。"
-                    "Git diffを見て以下を評価してください。"
-                    "CRITICAL（致命的な問題）"
-                    "WARNING（軽微な問題）"
-                    "OK（問題なし）"
-                    "必ずどれか1つを先頭に書いてください。"
-
-                    "補足:"
-                    "- GROQ_API_KEY = os.getenv は安全です（秘密情報の直書きではありません）"
-                    "- files[:5] はトークン節約のための意図的な制限です"
-                    "- test.txt などの一時ファイルは軽微なWARNINGとして扱ってください"
+"Git diffを見て、CRITICAL / WARNING / OK のどれか1つだけで判定してください。"
+"CRITICALは、本番障害レベル・セキュリティ事故・実行不能なバグのみです。"
+"推測・設計判断・最適化の違いはCRITICALにしないでください。"
+"files[:5] はトークン節約のための仕様です。問題ではありません。"
+"GROQ_API_KEY = os.getenv(...) は安全です。秘密情報の直書きではありません。"
+"test.txt などの一時ファイルは最大でもWARNINGです。"
+"回答の先頭は必ず CRITICAL: / WARNING: / OK: のどれか1つにしてください。"
                 )
             },
             {
@@ -151,7 +148,7 @@ diff:
     print(result)
     # スコアリング
     result_upper = result.upper()
-
+    first_line = result.strip().splitlines()[0].upper()
     if "CRITICAL" in result_upper or "危険" in result:
         score = 30
     elif "WARNING" in result_upper or "注意" in result:

@@ -37,24 +37,29 @@ def run_command(command):
 
     return result.stdout
 
-
 def get_git_diff() -> str:
-    try:
-        files = run_command(["git", "diff", "--name-only", "HEAD^", "HEAD"]).splitlines()
-    except:
-        files = []
+    # PR環境対応
+    base = os.getenv("GITHUB_BASE_REF")
+
+    if base:
+        diff_cmd = ["git", "diff", f"origin/{base}...HEAD"]
+    else:
+        diff_cmd = ["git", "diff", "HEAD^", "HEAD"]
+
+    files = run_command(diff_cmd + ["--name-only"]).splitlines()
 
     if not files:
         return ""
 
     diffs = []
 
-    for f in files[:5]:  # 上位5ファイルだけ
-        d = run_command(["git", "diff", "--unified=20", "HEAD^", "HEAD", "--", f])
+    for f in files[:5]:
+        d = run_command(diff_cmd + ["--unified=20", "--", f])
         if d.strip():
             diffs.append(f"### FILE: {f}\n{d}")
 
     return "\n\n".join(diffs)
+
 
 def call_groq(prompt: str) -> str:
     if not GROQ_API_KEY:

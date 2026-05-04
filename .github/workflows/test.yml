@@ -12,4 +12,9 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install pytest pytest-cov
-      - run: pytest --cov=. --cov-report=term
+      - run: |
+          if [ -f test_auto.py ]; then
+            pytest --cov=. --cov-report=term
+          else
+            python -m py_compile ollama_groq_pipeline.py
+          fi

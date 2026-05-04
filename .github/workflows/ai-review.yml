@@ -13,7 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
+        with:
+        fetch-depth: 0
       - name: Pythonセットアップ
         uses: actions/setup-python@v5
         with:
@@ -26,7 +27,7 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          python ai_review.py > ai_result.txt
+          python ai_review.py | tee ai_result.txt
 
       - name: comment PR
         uses: actions/github-script@v7

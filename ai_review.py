@@ -171,22 +171,6 @@ diff:
     if level == "CRITICAL":
         print("重大な問題あり（参考表示）")
 
-
-    # スコアリング
-    result_upper = result.upper()
-    first_line = result.strip().splitlines()[0].upper()
-    if "CRITICAL" in result_upper or "危険" in result:
-        score = 30
-    elif "WARNING" in result_upper or "注意" in result:
-        score = 70
-    else:
-        score = 100
-
-    print(f"\nAI REVIEW SCORE: {score}")
-
-    if score < 50:
-        print("重大な問題あり（参考表示）")
-        sys.exit(1)
     if "OK" not in result.strip().upper():
             print("\nAIレビューで指摘があります。")
             print("ただし手動レビュー用なのでCIは失敗にしません。")

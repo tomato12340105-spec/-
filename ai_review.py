@@ -83,7 +83,10 @@ def call_groq(prompt: str) -> str:
         json=payload,
         timeout=60,
     )
-    response.raise_for_status()
+    if response.status_code == 429:
+        print("Groq rate limit。30秒待って再実行してください。")
+        sys.exit(1)
+        response.raise_for_status()
 
     return response.json()["choices"][0]["message"]["content"]
 
@@ -123,8 +126,9 @@ diff:
     print(result)
 
     if "OK" not in result.strip().upper():
-       print("\nAIレビューで指摘があります。")
-       sys.exit(1)
+        print("\nAIレビューで指摘があります。")
+        print("ただし手動レビュー用なのでCIは失敗にしません。")
+        return
 
     print("\nAIレビューOK") 
 

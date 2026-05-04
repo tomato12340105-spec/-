@@ -1,0 +1,34 @@
+name: AI Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_file:
+        description: "AIチェックするファイル"
+        required: true
+        default: "ollama_groq_pipeline.py"
+      design:
+        description: "レビュー指示"
+        required: true
+        default: "差分をレビューして問題がないか確認してください"
+
+jobs:
+  ai_review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pythonセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: install
+        run: pip install requests
+
+      - name: run AI review
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          python ollama_groq_pipeline.py --file "${{ inputs.target_file }}" --design "${{ inputs.design }}"

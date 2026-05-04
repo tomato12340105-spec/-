@@ -104,7 +104,9 @@ def call_groq(prompt: str) -> str:
 "必ずこのルールに従うこと。"
 "GROQ_API_KEY という変数名だけでは秘密情報の混入ではありません。"
 "gsk_ や sk- で始まる実キー文字列がdiff内にある場合だけ秘密情報と判断してください。"
-                )
+"実行時エラーは、例外が確実に発生するコードがdiffに存在する場合のみ指摘してください。"
+"推測は禁止です。"
+                         )
             },
             {
                 "role": "user",
@@ -161,9 +163,8 @@ diff:
     print("\n===== AI REVIEW RESULT =====")
     print(result)
 
-    import json
+
     try:
-        data = json.loads(result)
         level = data.get("level", "OK")
         score = data.get("score", 100)
     except:

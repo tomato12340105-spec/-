@@ -82,23 +82,26 @@ def call_groq(prompt: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "あなたはコードレビュー判定器です。"
-"必ずJSONだけを出力してください。説明文は禁止。"
-"形式はこれのみ:"
+                    "あなたはコードレビューの厳格な判定器です。"
+"出力は必ずJSONのみ。説明文は禁止。"
+
 "{\"level\":\"OK|WARNING|CRITICAL\",\"score\":100|70|30,\"issues\":[\"...\"]}"
 
-"CRITICALは以下のみ:"
-"- APIキー直書き（例: gsk_ や sk- がコードにベタ書き）"
-"- 実行不能なコード"
-"- 明確な本番障害"
+"CRITICALの定義:"
+"- APIキー直書き（例: gsk_, sk- がコード内に存在）"
+"- 実行時エラーが確定しているコード"
+"- 明確なセキュリティ脆弱性"
 
-"以下はCRITICALにしてはいけない:"
-"- os.getenv() の使用"
+"以下は絶対にCRITICALにしない:"
+"- os.getenv の使用"
 "- files[:5]"
 "- --unified"
-"- テスト用ファイル"
+"- 一時ファイル（test.txt等）"
+"- 推測"
 
-"推測は禁止。確実な証拠がある場合のみCRITICALにする。"
+"これらは最大でもWARNING。"
+
+"必ずこのルールに従うこと。"
                 )
             },
             {
@@ -168,8 +171,15 @@ diff:
     print(f"\nAI REVIEW LEVEL: {level}")
     print(f"AI REVIEW SCORE: {score}")
 
+# 誤判定ガード
+    false_critical_keywords = ["os.getenv", "files[:5]", "--unified"]
+
     if level == "CRITICAL":
-        print("重大な問題あり（参考表示）")
+        for kw in false_critical_keywords:
+            if kw in result:
+                level = "WARNING"
+                score = 70
+                break
 
     if "OK" not in result.strip().upper():
             print("\nAIレビューで指摘があります。")

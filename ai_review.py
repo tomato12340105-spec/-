@@ -39,13 +39,15 @@ def run_command(command):
 
 
 def get_git_diff() -> str:
-    diff = run_command(["git", "diff", "HEAD~1", "HEAD"])
+    diff = run_command(["git", "diff", "HEAD^", "HEAD"])
+
+    if "unknown revision" in diff.lower() or "ambiguous argument" in diff.lower():
+        diff = run_command(["git", "show", "--format=", "--no-ext-diff", "HEAD"])
 
     if not diff.strip():
         diff = run_command(["git", "diff"])
 
     return diff
-
 
 def call_groq(prompt: str) -> str:
     if not GROQ_API_KEY:

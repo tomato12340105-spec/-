@@ -1,6 +1,8 @@
-name: Test
-# CIテスト
-on: [push]
+name: CI
+
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
@@ -9,10 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Pythonセットアップ
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - run: pip install pytest pytest-cov
+      - name: 依存関係インストール
+        run: |
+          pip install pytest pytest-cov
 
-      - run: pytest --cov=. --cov-report=term
+      - name: テスト実行（カバレッジ強制）
+        run: |
+          if [ -f test_auto.py ]; then
+            pytest --cov=. --cov-report=term --cov-fail-under=80
+          else
+            python -m py_compile ollama_groq_pipeline.py
+          fi

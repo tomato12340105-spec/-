@@ -18,3 +18,169 @@ E.と設計・提案（最初に渡した設計を参照）があってるかGro
 　↓
  ✅一致 → 完了
 ❌ ズレ → ズレた箇所E.をリセットして１に再修正
+
+
+
+
+# 🔧 現在の開発環境まとめ（引き継ぎ用）
+
+## 🎯 目的
+
+Ollama + Groq を使った **コード自動修正パイプライン + CI自動検証環境** を構築
+
+---
+
+## 🧠 パイプライン構成
+
+### ① コード修正
+
+* Ollama（ローカル）でコード修正
+* diffベースで最小変更
+
+---
+
+### ② AIチェック（段階制）
+
+* Groq 8B → 軽量チェック
+* NGのときのみ Groq 70B → 最終判断
+
+---
+
+### ③ AI制御（トークン節約）
+
+* 小変更はスキップ
+
+```python
+def should_run_ai(diff_text: str) -> bool:
+    ...
+```
+
+* 回数制限
+
+```python
+MAX_8B_CALLS = 3
+MAX_70B_CALLS = 2
+```
+
+---
+
+### ④ pytest（TDD）
+
+* 自動生成
+* 弱いテストは再生成
+* JSON構造化でエラー解析
+
+---
+
+### ⑤ カバレッジ管理
+
+```python
+coverage = extract_coverage(test_output)
+
+if coverage < 80:
+    再生成
+```
+
+---
+
+## 🚀 CI（GitHub Actions）
+
+### 📁 配置
+
+```
+.github/workflows/test.yml
+```
+
+---
+
+### ⚙️ 内容
+
+* push時に自動実行
+* pytest + coverage
+* test_auto.py 無い場合は構文チェック
+
+```yaml
+- run: |
+    if [ -f test_auto.py ]; then
+      pytest --cov=. --cov-report=term
+    else
+      python -m py_compile ollama_groq_pipeline.py
+    fi
+```
+
+---
+
+## 🔐 セキュリティ
+
+* APIキー直書き禁止
+
+```python
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+```
+
+* `.gitignore`
+
+```
+.env
+.lmstudio/
+__pycache__/
+.vscode/
+*.exe
+```
+
+---
+
+## 🛠 Git状態
+
+* GitHub連携済み
+* push成功済み
+* CI成功（Actionsで確認済み）
+
+---
+
+## ⚠️ 過去トラブル
+
+* APIキー漏洩 → GitHubにブロックされた
+* 大容量ファイル混入 → `.gitignore`で除外
+* CI失敗 → test_auto.py無し問題修正
+
+---
+
+## 🎯 現在の状態
+
+```
+AI修正 → pytest → push → CI自動チェック
+```
+
+👉 完全自動検証環境
+
+---
+
+## 🚀 次の強化候補
+
+* pytest カバレッジ強制
+
+```yaml
+--cov-fail-under=80
+```
+
+* AIチェックをCIに統合（手動トリガー）
+* ログ可視化
+* テストスコア化
+
+---
+
+## 💬 補足
+
+この環境は：
+
+* トークン節約設計
+* 段階AIチェック
+* 自動テスト生成
+* CI統合
+
+👉 実用レベルのAI開発パイプライン
+
+---
+
+

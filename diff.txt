@@ -1,0 +1,13 @@
+diff --git a/.github/.gitignore b/.github/.gitignore
+index e69de29..24aa308 100644
+--- a/.github/.gitignore
++++ b/.github/.gitignore
+@@ -0,0 +1,7 @@
++.lmstudio/
++*.bin
++*.gguf
++*.pt
++*.pth
++__pycache__/
++.env
+\ No newline at end of file

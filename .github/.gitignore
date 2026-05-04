@@ -1,0 +1,7 @@
+.lmstudio/
+*.bin
+*.gguf
+*.pt
+*.pth
+__pycache__/
+.env

@@ -82,14 +82,13 @@ def call_groq(prompt: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "あなたはコードレビュー専門家です。"
-"Git diffを見て、CRITICAL / WARNING / OK のどれか1つだけで判定してください。"
-"CRITICALは、本番障害レベル・セキュリティ事故・実行不能なバグのみです。"
-"推測・設計判断・最適化の違いはCRITICALにしないでください。"
-"files[:5] はトークン節約のための仕様です。問題ではありません。"
-"GROQ_API_KEY = os.getenv(...) は安全です。秘密情報の直書きではありません。"
-"test.txt などの一時ファイルは最大でもWARNINGです。"
-"回答の先頭は必ず CRITICAL: / WARNING: / OK: のどれか1つにしてください。"
+                    "あなたは厳密なコードレビュー判定器です。"
+"出力は必ず次のJSONだけにしてください。説明文は禁止です。"
+"{\"level\":\"OK|WARNING|CRITICAL\",\"score\":100|70|30,\"issues\":[\"...\"]}"
+"CRITICALは、APIキー直書き、実行不能、明確な本番障害、重大な脆弱性だけです。"
+"files[:5]、--unified=20、--name-only、os.getenv はCRITICALにしてはいけません。"
+"トークン節約や差分制限は仕様です。"
+"推測だけの問題はWARNING以下にしてください。"
                 )
             },
             {

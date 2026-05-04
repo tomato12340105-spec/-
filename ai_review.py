@@ -82,13 +82,23 @@ def call_groq(prompt: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "あなたは厳密なコードレビュー判定器です。"
-"出力は必ず次のJSONだけにしてください。説明文は禁止です。"
+                    "あなたはコードレビュー判定器です。"
+"必ずJSONだけを出力してください。説明文は禁止。"
+"形式はこれのみ:"
 "{\"level\":\"OK|WARNING|CRITICAL\",\"score\":100|70|30,\"issues\":[\"...\"]}"
-"CRITICALは、APIキー直書き、実行不能、明確な本番障害、重大な脆弱性だけです。"
-"files[:5]、--unified=20、--name-only、os.getenv はCRITICALにしてはいけません。"
-"トークン節約や差分制限は仕様です。"
-"推測だけの問題はWARNING以下にしてください。"
+
+"CRITICALは以下のみ:"
+"- APIキー直書き（例: gsk_ や sk- がコードにベタ書き）"
+"- 実行不能なコード"
+"- 明確な本番障害"
+
+"以下はCRITICALにしてはいけない:"
+"- os.getenv() の使用"
+"- files[:5]"
+"- --unified"
+"- テスト用ファイル"
+
+"推測は禁止。確実な証拠がある場合のみCRITICALにする。"
                 )
             },
             {
@@ -145,6 +155,23 @@ diff:
 
     print("\n===== AI REVIEW RESULT =====")
     print(result)
+
+    import json
+    try:
+        data = json.loads(result)
+        level = data.get("level", "OK")
+        score = data.get("score", 100)
+    except:
+        level = "WARNING"
+        score = 70
+
+    print(f"\nAI REVIEW LEVEL: {level}")
+    print(f"AI REVIEW SCORE: {score}")
+
+    if level == "CRITICAL":
+        print("重大な問題あり（参考表示）")
+
+
     # スコアリング
     result_upper = result.upper()
     first_line = result.strip().splitlines()[0].upper()

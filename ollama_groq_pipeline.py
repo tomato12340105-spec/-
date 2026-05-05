@@ -137,7 +137,7 @@ def safe_run_tests(code: str, timeout: int = 5) -> tuple:
 def run_pytest(timeout: int = 30) -> tuple:
     try:
         result = subprocess.run(
-            ["pytest", "--cov=.", "--cov-report=term-missing"],
+            ["pytest", "--maxfail=3", "--disable-warnings"],
             capture_output=True,
             text=True,
             timeout=timeout
@@ -961,13 +961,12 @@ def main():
                     # 👇 ここが追加（70B後）
                     test_code = groq_generate_pytest(final_result)
 
-                    if is_test_weak(test_code):
-                        weakness = explain_test_weakness(test_code)
-
-                        print(f"⚠️ テストが弱い → 再生成\n{weakness}")
-
-                        test_code = groq_generate_pytest(
-                            final_result
+                        for _ in range(2):
+                            if not is_test_weak(test_code):
+                                break
+                            test_code = groq_generate_pytest(...)
+                            (
+                             final_result
                             + "\n\n# 以下の不足を必ず改善してください:\n"
                             + weakness
                             + "\n# 異常系・境界値・正常系を含めてください。"

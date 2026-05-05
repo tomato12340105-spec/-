@@ -9,19 +9,24 @@ jobs:
 
     permissions:
       contents: read
-      pull-requests: write   # ← これ重要
+      pull-requests: write
+      issues: write
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Pythonセットアップ
+
+      - name: Python setup
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: install
-        run: pip install requests
+        run: pip install requests pytest pytest-cov
+
+      - name: run pytest
+        run: pytest --cov=. --cov-report=term --disable-warnings
 
       - name: run AI review
         env:
@@ -30,13 +35,16 @@ jobs:
           python ai_review.py | tee ai_result.txt
 
       - name: comment PR
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('ai_result.txt', 'utf8');
+            const body = fs.existsSync('ai_result.txt')
+              ? fs.readFileSync('ai_result.txt', 'utf8')
+              : 'AI review failed before output was generated.';
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
